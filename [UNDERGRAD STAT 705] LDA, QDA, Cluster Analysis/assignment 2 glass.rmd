@@ -1,0 +1,99 @@
+---
+title: "Assignment 2 glass"
+author: "Drew Murray"
+date: "10/1/2022"
+output: html_document
+---
+
+```{r}
+glass <- read.csv("C:/Users/dgmur/Downloads/glass.data", header = F)
+View(glass)
+colnames(glass) <- c('ID','RI','Na','Mg','Al','Si','K','Ca','Ba','Fe','Type')
+```
+#A
+```{r}
+a <- boxplot(ID~Type, data = glass,xlab="ID",ylab="Type", horizontal = TRUE)
+a
+b<-boxplot(RI~Type, data = glass,xlab="ID",ylab="Type", horizontal = TRUE)
+b
+c<-boxplot(Na~Type, data = glass,xlab="ID",ylab="Type", horizontal = TRUE)
+c
+d<-boxplot(Mg~Type, data = glass,xlab="ID",ylab="Type", horizontal = TRUE)
+d
+e<-boxplot(Al~Type, data = glass,xlab="ID",ylab="Type", horizontal = TRUE)
+e
+f<-boxplot(Si~Type, data = glass,xlab="ID",ylab="Type", horizontal = TRUE)
+f
+g<-boxplot(K~Type, data = glass,xlab="ID",ylab="Type", horizontal = TRUE)
+g
+h<-boxplot(Ca~Type, data = glass,xlab="ID",ylab="Type", horizontal = TRUE)
+h
+i<-boxplot(Ba~Type, data = glass,xlab="ID",ylab="Type", horizontal = TRUE)
+i
+j<-boxplot(Fe~Type, data = glass,xlab="ID",ylab="Type", horizontal = TRUE)
+j
+```
+Na, RI,Si,Ca,Mg
+
+#B
+```{r}
+par(mfrow=c(1,1))
+k<-plot(Na~RI, data=glass, xlab="Sodium", ylab = "RI", main="Sodium v RI")
+k
+```
+No, many of the observations are closed together making it hard to discriminate
+
+#C
+```{r}
+l<-plot(Al~Ca,data=glass, xlab="Aluminum", ylab="Calcium", main="Aluminum v. Calcium")
+l
+```
+
+#D
+```{r}
+newglass <- c("RI","Na","Al","Ca","Type")
+newdata <- glass[newglass]
+View(newdata)
+library(MASS)
+fit.cv <- lda(Type~., data=newdata, CV=TRUE)
+t1<- table(newdata$Type,fit.cv$class)
+t1
+aper1 <- 92/214
+aper1
+```
+#E
+```{r}
+fit2 <- qda(Type~., data=newdata, CV=TRUE)
+t2<-table(newdata$Type,fit2$class)
+t2
+aper2 <- 105/214
+aper2
+```
+linear discriminant analysis is more effective 
+
+#F 
+```{r}
+set.seed(12)
+
+train<- sample(1:214,107)
+
+fit.train <- lda(Type~., data = newdata, subset = train, CV=TRUE)
+
+t3<-table(newdata$Type[-train],fit.train$class)
+t3
+aper3<- 72/107
+aper3
+```
+#G
+```{r}
+fit3 <- lda(Type~., data = glass, CV=TRUE)
+t4<-table(glass$Type,fit3$class)
+t4
+aper4 <- 17/214
+aper4
+```
+Using all the numerical variables was the most effective because it had the lowest aer
+
+#H
+```{r}
+newdata2 <- subset(glass, Type < 4,)

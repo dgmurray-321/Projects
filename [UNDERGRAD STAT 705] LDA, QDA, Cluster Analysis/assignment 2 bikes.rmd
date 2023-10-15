@@ -1,0 +1,61 @@
+---
+title: "assignment 2 bikes"
+author: "Drew Murray"
+date: "10/1/2022"
+output: html_document
+---
+
+```{r}
+Bikes <- read.csv("C:/Users/dgmur/Downloads/SeoulBikes_Fl2022.csv")
+View(Bikes)
+bikes2 <- Bikes[,c(1:4,12)]
+View(bikes2)
+```
+
+
+
+#a
+```{r}
+distance<- dist(bikes2)
+a <- plot(hclust(distance, "average"), hang = -3,cex=2)
+a
+b<- plot(hclust(distance, "ward.D2"), hang = -3,cex=2)
+b
+```
+#no, it's a bit challenging to determine the number of clusters
+
+#b
+```{r}
+bikes2s <- apply(bikes2[ , 1:4], 2, function(x) (x-mean(x))/sd(x))
+distance2 <- dist(bikes2s)
+c<- plot(hclust(distance2, "average"), hang = -3,cex=2)
+c
+d<- plot(hclust(distance2, "ward.D2"), hang = -3,cex=2)
+d
+```
+#I prefer the standardized because it's easier to determine the actual amount of clusters in the dendrogram
+
+#c
+```{r}
+clust4<- kmeans(bikes2,4)
+clust4
+clust3 <- kmeans(bikes2,3)
+clust3
+clust2 <- kmeans(bikes2,2)
+clust2
+```
+#I chose 2 clusters because had a highest cluster sum of squares, while the cluster mean >0
+
+#d
+```{r}
+clust5 <- kmeans(bikes2s,5)
+clust5
+clust10 <- kmeans(bikes2s,10)
+clust10
+clust100 <- kmeans(bikes2s,100)
+clust100
+```
+#I prefer unstandardized because it will give an exact number of clusters, while standardized seems to approach infinite
+
+#e
+For hierarchical, they did not match at all, there were a lot more clusters than 4, this is because many of the observations are statistically different from each other. For non-hierarchical, they also did not match, the optimal amount was actually less than 4, this is because it specifically tried to find what number of groups are statistically similar while not having the cluster mean to be zero  
