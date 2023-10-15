@@ -1,0 +1,292 @@
+---
+title: "assignment 5.1"
+author: "Drew Murray"
+date: "2022-12-18"
+output: html_document
+---
+
+```{r, echo=TRUE}
+wine = read.csv("C:/Users/dgmur/Downloads/wineFl2022.csv")
+
+#1
+
+#a
+
+par(mar = c(1, 1, 1, 1))
+
+par(mfrow=c(3,3))
+
+boxplot(wine$fixed_acidity, horizontal = TRUE)
+
+boxplot(wine$volatile_acidity, horizontal = TRUE)
+
+boxplot(wine$citric_acid, horizontal = TRUE)
+
+boxplot(wine$residual_sugar, horizontal = TRUE)
+
+boxplot(wine$chlorides, horizontal = TRUE)
+
+boxplot(wine$free_sulfur_dioxide, horizontal = TRUE)
+
+boxplot(wine$total_sulfur_dioxide, horizontal = TRUE)
+
+boxplot(wine$density, horizontal = TRUE)
+
+boxplot(wine$pH, horizontal = TRUE)
+
+boxplot(wine$sulphates, horizontal = TRUE)
+
+boxplot(wine$alcohol, horizontal = TRUE)
+
+
+qq1 = qqnorm(wine$fixed_acidity)
+qqline(wine$fixed_acidity)
+
+
+qq2 = qqnorm(wine$volatile_acidity)
+qqline(wine$volatile_acidity)
+
+
+qq3 = qqnorm(wine$citric_acid)
+qqline(wine$citric_acid)
+
+
+qq4 = qqnorm(wine$residual_sugar)
+qqline(wine$residual_sugar)
+
+
+qq5 = qqnorm(wine$chlorides)
+qqline(wine$chlorides)
+
+qq6 = qqnorm(wine$free_sulfur_dioxide)
+qqline(wine$free_sulfur_dioxide)
+
+qq7 = qqnorm(wine$total_sulfur_dioxide)
+qqline(wine$total_sulfur_dioxide)
+
+qq8 = qqnorm(wine$density)
+qqline(wine$density)
+
+qq9 = qqnorm(wine$pH)
+qqline(wine$pH)
+
+qq10 = qqnorm(wine$sulphates)
+qqline(wine$sulphates)
+
+qq11 = qqnorm(wine$alcohol)
+qqline(wine$alcohol)
+
+#all variables besides density show rightly skewed, and according to the q-q plots,
+#they lack normality. For density, it shows evidence of being symmetric and normality
+
+
+apply(wine[1:11],2,shapiro.test)
+
+#using the critical value of 0.995 all variables were signficant in rejecting  
+#normality assumption besides pH
+
+#Chi-square plot
+wine=as.matrix(wine)
+n=nrow(wine)
+Xbar=colMeans(wine[,1:11])
+
+S=var(wine[,1:11])
+
+invS=solve(S)
+
+D=rep(0,n)
+
+for (i in 1:n){D[i]=t(wine[i,1:11]-Xbar)%*%invS%*%(wine[i,1:11]-Xbar)}
+
+par(mfrow=c(1,1))
+plot(qchisq((seq(1:n)-0.5)/n,11),sort(D),pch=19,main="Chi-square plot",xlab="Chi-square quantiles",ylab="generalized distances",cex.axis=1, cex.lab=1.5, cex.main=1.5)
+abline(0,1,lty=1,cex=1.5,col="red")
+
+#B
+```
+The chi-square plot is used to check normality. Shows deviation from multivariate normality due to outliers skewing the the line upwards. 
+```{r}
+#C 
+ source("C:/Users/dgmur/Downloads/functions.R")
+a = distances(wine)
+tail(sort(a))
+
+tail(order(a))
+
+round(wine[c(157,63),],2)
+```
+Observation 157 and 63 are the outliers. 157 is a white wine that has an exteme value in total sulfur dioxide, and 63 is a red wine that has an extreme value free sulfur dioxide and chlorides. 
+```{r}
+#D
+
+library(MASS)
+source("C:/Users/dgmur/Downloads/functions.R")
+
+
+wine2 = wine[,1:11]
+
+wine2[,3]=wine[,3]+.01
+
+boxcoxestimate(wine2)
+
+boxcoxplot(wine2[,1])
+
+boxcoxplot(wine2[,2])
+
+boxcoxplot(wine2[,3])
+
+boxcoxplot(wine2[,4])
+
+boxcoxplot(wine2[,5])
+
+boxcoxplot(wine2[,6])
+
+boxcoxplot(wine2[,7])
+
+boxcoxplot(wine2[,8])
+
+boxcoxplot(wine2[,9])
+
+boxcoxplot(wine2[,10])
+
+boxcoxplot(wine2[,11])
+par(mfrow=c(4,4))
+```
+Using the boxcox transformation method. It show that most of the variables have improved after the transformation.
+#E
+
+if the population mean for both red wines and white wines are different than combining may cause bimodality Bimodality shows a lack of normality in the data
+```
+```{r}
+#Bonus
+
+
+e = as.matrix(wine[,c(7,11)])
+e[1:3,]
+
+barX <- c(mean(e[,1]), mean(e[,2]))
+barX
+ 
+S <- var(e)
+ 
+source("ellipseFunctions.R")
+
+par(mfrow=c(1,1), mar=c(4,4,1,1))
+
+plot(e,xlab="Total Sulfur Dioxide", ylab="Alcohol", pch=15, col=2, cex.axis=1.5,cex.lab=1.5)
+
+points(barX[2]~barX[1], col=1, pch=16,cex=1.5)
+
+points(e[1,2]~e[1,1],pch=16,col=5,cex=2)
+
+ellipsem(barX,solve(S),1.39, col=4)
+
+i=1
+
+xi <-e[i,]
+
+sc <- (xi - barX) %*% solve(S) %*% (xi - barX)
+
+sc
+ 
+Inside=0
+ 
+for( i in 1:nrow(e))
+    {
+      xi <- e[i,]
+      sc <- (xi - barX) %*% solve(S) %*% (xi - barX)
+      if(sc < 1.39) Inside=Inside+1
+      }
+
+Inside
+
+Inside/nrow(e)
+```
+
+```{r}
+#2 
+
+men = read.table("C:/Users/dgmur/Downloads/T1-9.dat")
+women = read.table("C:/Users/dgmur/Downloads/T8-6.dat")
+
+#a
+
+t1 <- men[,c(2:6)]
+t2 <- women[,c(2:6)]
+
+d <- t1 - t2
+
+dbar<-colMeans(d)
+
+round(dbar,2)
+
+covd = cov(d)
+
+
+
+library(ICSNP)
+
+HotellingsT2(t1,t2, level = 0.5)
+
+#male mean vector is different from female mean vector
+#b
+p<-ncol(t1)
+
+alpha = 0.05
+
+m = men[,c(1:6)]
+
+w = women[,c(1:6)]
+
+n1 = nrow(m)
+
+n2 = nrow(w)
+
+
+for(i in 1:p){
+  
+   cat("Variable",i, dbar[i] + c(-1,1)*qt(alpha/(2*p),n-1,lower.tail=FALSE)
+       
+       *sqrt(covd[i,i]/n),"\n")
+}
+
+
+L1 = cov(t1)
+
+L2= cov(t2)
+
+Sp=((n1-1)/(n1+n2-2))*L1 + ((n2-1)/(n1+n2-2))*L2
+
+xbar1 = colMeans(t1) 
+
+xbar2 = colMeans(t2)
+
+for(i in 1:p){
+   cat("Variable",i,(xbar1-xbar2)[i] + c(-1,1)*qt(alpha/(2*p),n1+n2-2,lower.tail=FALSE)
+         *sqrt((1/n1 + 1/n2)*Sp[i,i]),"\n")
+}
+#C
+```
+Paired sample approach was used because each population has a naturally pairing with the country
+
+```{r}
+#Bonus Points 2
+wine1 = as.data.frame(wine)  
+
+#1
+m1 <- manova(cbind(fixed_acidity, density) ~ as.factor(quality), data= wine1)
+
+summary.manova(m1,test = c("Wilks"))
+
+#There is a signifcant difference
+
+#2
+m2 = manova(cbind(volatile_acidity, alcohol) ~ as.factor(quality), data= wine1)
+
+summary.manova(m2,test = c("Wilks"))
+
+#There is a significant difference, and the answer did not change
+
+#3
+```
+Shows that there is not a clear distinction, we cannot conclude that we can differentiate between all of the quality scores
