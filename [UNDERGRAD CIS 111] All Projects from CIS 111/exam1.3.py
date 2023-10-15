@@ -1,0 +1,7 @@
+first = input("Emter your first name: ")
+last = input("Enter your last name: ")
+birth = input("Enter your year of birth: ")
+print()
+print()
+print("One suggested gmail address for you is ",first[0]+last+birth[1]+birth[3]+ "@gmail.com")
+print("One suggested yahoo address for you is ",first+last[0]+birth[2]+birth[0]+ "@yahoo.com")
