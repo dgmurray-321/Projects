@@ -1,0 +1,246 @@
+---
+title: "Assignment 3"
+author: "Drew Murray"
+date: "10/20/2022"
+output: html_document
+---
+
+```{r}
+(echo = TRUE)
+T1 <- read.table("C:/Users/dgmur/Downloads/T1-9.dat")
+colnames(T1)  <- c("Country","100m","200m","400m","800m","1500m","3000m","Marathon")
+#A
+round(apply(T1[,-1],2,mean),2)
+
+round(cov(T1[,-1]),2)
+
+round(cor(T1[,-1]),2)
+#B      
+track = as.matrix(T1[,-1])
+colnames(track) <- c("100m","200m","400m","800m","1500m","3000m","Marathon")
+V1 <- track[,1]/3+track[,2]/6+track[,3]/12
+V2<- track[,4]/2.4+track[,5]/4.5+track[,6]/9
+V3 <- track[,7]/60
+
+V1[c(15,25,21,14)]
+
+V2[c(15,25,21,14)]
+
+V3[c(15,25,21,14)]
+
+#C
+
+mean(V1)
+
+mean(V2)   
+
+mean(V3)
+
+var(cbind(V1,V2,V3))
+
+#D 
+
+xbar <- colMeans(track)
+S <- cov(track)
+
+x <- c(1/3,1/6,1/12,0,0,0,0)
+y <- c(0,0,0,1/2.4,1/4.5,1/9,0)
+z <- c(0,0,0,0,0,0,1/60)
+
+meanV1<- x%*%xbar
+meanV1 
+
+meanV2 <- y%*%xbar
+meanV2
+
+meanV3 <- z%*%xbar
+meanV3 
+
+varV1 <- x%*%S%*%x
+varV1
+
+varV2 <- y%*%S%*%y
+varV2
+
+varV3 <- z%*%S%*%z
+varV3
+
+covV1V2<- x%*%S%*%y
+covV1V2
+
+covV1V3 <- x%*%S%*%z
+covV1V3
+
+covV2V3 <- y%*%S%*%z
+covV2V3
+
+X <- rbind(x,y,z)
+
+MatMean<- X%*%xbar
+MatMean
+
+MatCov <- X%*%S%*%t(X)
+MatCov
+
+#E 
+#Showed the same results as part C. 
+
+
+
+
+bikes2 <- read.csv("C:/Users/dgmur/Downloads/SeoulBikes_Fl2022.csv")
+
+dim(bikes2)
+View(bikes2)
+bikes2 <- bikes2[,c(4:16)]
+View(bikes2)
+bikes2$Holiday<-factor(bikes2$Holiday)
+bikes2$Seasons <- as.factor(bikes2$Seasons)
+bikes2$Functioning.Day<- factor(bikes2$Functioning.Day)
+bikes2$Time<- factor(bikes2$Time)
+#A 
+lm1 <- lm(bikes2$RentedBikeCount~., data= bikes2)
+summary(lm1)
+plot(lm1)
+
+```
+Residuals vs Fitted plot shows heteroscedasticity, qqplot steers away from the line once it hits between quartile 1 and 2. A log transformation on one of the predictor variables would fix this issue. 
+
+```{r echo=TRUE}
+plot(lm1)
+plot(bikes2$RentedBikeCount~bikes2$Humidity+bikes2$DewPointTemp+bikes2$SolarRadiation+bikes2$Rainfall+bikes2$Seasons
+     +bikes2$Holiday+bikes2$Functioning.Day+bikes2$Time, data = bikes2)
+pairs(bikes2, labels = names(bikes2), cex = 0.1)
+library(leaps)
+regfit_full = regsubsets(bikes2$RentedBikeCount~., data = bikes2)
+summary(regfit_full)
+ 
+reg <- summary(regfit_full)
+names(reg)
+
+par(mfrow=c(2,2))
+plot(reg$rss, xlab = "Number of Variables", ylab = "RSS", type = "l")
+
+plot(reg$adjr2, xlab = "Number of Variables", ylab= "Adjusted R-squared", type = "l")
+adjr2max = which.max(reg$adjr2)
+points(adjr2max, reg$adjr2[adjr2max], col="blue", cex = 2, pch=20)
+
+plot(reg$cp, xlab = "Number of Variables", ylab= "Cp", type ="l")
+cpmin = which.min(reg$cp)
+points(cpmin,reg$cp[cpmin], col="blue", cex=2, pch=20)
+
+plot(reg$bic, xlab = "Number of Variables", ylab = "BIC", type="l")
+bicmin = which.min(reg$bic)
+points(bicmin, reg$bic[bicmin], col="blue", cex=2, pch=20)
+
+coef(regfit_full,8)
+#B
+lm2 <- lm(RentedBikeCount~ Humidity+DewPointTemp+Rainfall+Seasons+
+            Functioning.Day+Holiday, data = bikes2)
+plot(lm1)
+
+#c 
+x.new <- data.frame(Temperature=12.1, Humidity=29, WindSpeed=2.3,
+                    Visibility=1734, DewPointTemp=-5.4, SolarRadiation=2.26,
+                    Rainfall=0, Snowfall=0, Seasons="Spring", Functioning.Day="Yes",
+                    Holiday="Holiday")
+
+predict(lm2, x.new, interval = "predict")
+#3 
+
+bikes3 <- read.csv("C:/Users/dgmur/Downloads/SeoulBikesVer2_Fl2022.csv")
+dim(bikes3)
+
+bikes3$Seasons<- as.factor(bikes3$Seasons)
+bikes3$Holiday <- as.factor(bikes3$Holiday)
+bikes3$Functioning.Day <- as.factor(bikes3$Functioning.Day)
+
+bikes3 <- bikes3[,c(4:17)]
+
+pairs(bikes3[,c(1:9,11:14)], label=names(bikes3[,c(1:9,11:14)]),cex=0.75, col=2+as.numeric(bikes3$Seasons))
+
+names(bikes3[10])
+lm.multi <- lm(cbind(RentedBikeCount, BikeCountPlus2,BikeCountEvening)~
+                 Temperature+Humidity+WindSpeed+Visibility+
+                 SolarRadiation+Seasons, data = bikes3) 
+
+
+
+summary.aov(lm.multi)
+
+summary(manova(lm.multi), test = c("Wilks"))
+
+library(car)
+
+Manova(lm.multi, type="II", test=c("Wilks"))
+
+rstandard.mlm <- function(model){
+  Q <- with(model, qr.qy(qr, diag(1, nrow = nrow(qr$qr), ncol = qr$rank)))
+  hii <- rowSums(Q^2)
+  RSS <- colSums(model$residuals^2)
+  sigma <- sqrt(RSS/model$df.residual)
+  pointwise_sd <- outer(sqrt(1-hii), sigma)
+  model$residuals/pointwise_sd
+}
+
+f<- fitted(lm.multi); 
+r<- rstandard(lm.multi);
+
+par(mfcol=c(3,2))
+a <- plot(f, r, col = as.numeric(col(f)), pch = 19, ylim = c(-3, 4))
+legend("topleft", legend = paste0("response ", 1:ncol(f)), pch = 19,
+       col = 1:ncol(f), text.col = 1:ncol(f))
+
+for(i in 1:ncol(f)){
+  plot(f[,i],r[,i], main = paste("Reponse",i))
+  qqnorm(r[,i], main = paste("Reponse", i))
+  qqline(r[,i])
+}
+#fitted model 
+Nlm.multi <- lm(cbind(RentedBikeCount, BikeCountPlus2,BikeCountEvening)~
+                  Temperature+Humidity+
+                  SolarRadiation+Seasons, data = bikes3)
+summary.aov(Nlm.multi)
+
+summary(manova(Nlm.multi), test = c("Wilks"))
+
+library(car)
+
+Manova(Nlm.multi, type="II", test=c("Wilks"))
+```
+shows lack of normality in each of the responses for the qqplots. A log transformation on one or more of the predictor variables may fix this issue. 
+
+```{r echo=TRUE}
+#C
+x1<- c(1, Temperature=12.1,Humidity=29,SolarRadiation=2.26,SeasonsSpring=1,SeasonsSummer=0,SeasonsWinter=0)
+x1
+
+h.Beta <- Nlm.multi$coeff
+h.Beta
+x
+p<- x1%*%h.Beta
+
+X<-model.matrix(~Temperature+Humidity+SolarRadiation+Seasons, data = bikes3) 
+
+m=3
+
+
+r=nrow(h.Beta)-1
+
+Resid=lm.multi$residuals
+
+n=nrow(Resid)
+h.Beta<- as.vector(h.Beta)
+hat.sigma = t(Resid)%*%Resid/n
+hat.sigma
+
+multiplier <- sqrt(qf(0.95,m,n-r-m)*(m*(n-r-1))/(n-r-m))
+for(i in 1:m){
+   pred.se <- sqrt((1 + x1%*%solve(t(X)%*%X)%*%x1)*hat.sigma[i,i]*(n/(n-r-1)))
+     cat("Response", i, (p)[i] - multiplier*pred.se ,
+           (p)[i] + multiplier*pred.se, "\n")
+  }
+
+
+```
+
